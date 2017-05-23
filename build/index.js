@@ -124,6 +124,7 @@ var TriggBot = function TriggBot() {
 
   (0, _classCallCheck3.default)(this, TriggBot);
   this.start = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
+    var currentTime;
     return _regenerator2.default.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
@@ -143,9 +144,21 @@ var TriggBot = function TriggBot() {
 
             _this.bot = new _nodeTelegramBotApi2.default(_this.config.token, { polling: true });
 
+            // STARTED LOGS
+            currentTime = new Date().toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              second: 'numeric'
+            });
+
+            console.log('started at ' + currentTime);
+
             return _context4.abrupt('return', _this.startHandleMessages());
 
-          case 8:
+          case 10:
           case 'end':
             return _context4.stop();
         }

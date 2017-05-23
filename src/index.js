@@ -57,6 +57,17 @@ class TriggBot {
 
     this.bot = new TelegramBot(this.config.token, { polling: true });
 
+    // STARTED LOGS
+    const currentTime = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric'
+    });
+    console.log(`started at ${currentTime}`);
+
     return this.startHandleMessages();
   };
 
