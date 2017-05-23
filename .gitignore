@@ -1,0 +1,8 @@
+dist
+build
+node_modules
+npm-debug.log
+.DS_Store
+.idea
+triggers.json
+config.json
