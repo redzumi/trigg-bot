@@ -37,7 +37,8 @@ class TriggBot {
     triggers: {
       add: {
         done: 'Добавил.',
-        help: 'Используй /add <слово> / <сообщение>'
+        help: 'Используй /add <слово> / <сообщение>',
+        len: 'Минимальная длинна - 4 символа.'
       },
       del: {
         done: 'Удалил.',
@@ -91,6 +92,11 @@ class TriggBot {
 
     switch (command.name) {
       case 'add' : {
+        if (match[2].length < 4) {
+          await this.reply(chatId, TriggBot.LOCALE.triggers.add.len);
+          break;
+        }
+
         if (this.triggers.add(chatId, match[2])) {
           await this.reply(chatId, TriggBot.LOCALE.triggers.add.done);
         } else {
@@ -161,8 +167,14 @@ class Triggers {
 
   save = async () => saveJSON(this.file, this.triggers);
 
-  getTriggersByText = (chatId, message) =>
-    this.triggers[chatId].filter(trigger => message.includes(trigger.target));
+  getTriggersByText = (chatId, message) => {
+    if (!this.triggers[chatId]) {
+      return [];
+    }
+
+    // LOWER CASE
+    return this.triggers[chatId].filter(trigger => message.toLowerCase().includes(trigger.target.toLowerCase()));
+  };
 
   getByTarget = (chatId, target) =>
     this.triggers[chatId].find(trigger => trigger.target === target);
