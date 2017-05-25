@@ -249,7 +249,7 @@ var TriggBot = function TriggBot() {
 
   this.onCommand = function () {
     var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(message, match, command) {
-      var chatId, trigger, chatTriggers, triggersListMessage;
+      var chatId, rawJson, jsonData, trigger, chatTriggers, triggersListMessage;
       return _regenerator2.default.wrap(function _callee8$(_context8) {
         while (1) {
           switch (_context8.prev = _context8.next) {
@@ -278,7 +278,7 @@ var TriggBot = function TriggBot() {
 
             case 8:
               _context8.t1 = command.name;
-              _context8.next = _context8.t1 === 'add' ? 11 : _context8.t1 === 'del' ? 23 : _context8.t1 === 'all' ? 34 : 41;
+              _context8.next = _context8.t1 === 'add' ? 11 : _context8.t1 === 'addj' ? 27 : _context8.t1 === 'del' ? 49 : _context8.t1 === 'all' ? 60 : 67;
               break;
 
             case 11:
@@ -291,86 +291,148 @@ var TriggBot = function TriggBot() {
               return _this.reply(chatId, TriggBot.LOCALE.triggers.add.len);
 
             case 14:
-              return _context8.abrupt('break', 42);
+              return _context8.abrupt('break', 68);
 
             case 15:
-              if (!_this.triggers.add(chatId, match[2])) {
-                _context8.next = 20;
+              if (!(match[2].includes('<') && match[2].includes('</'))) {
+                _context8.next = 19;
                 break;
               }
 
               _context8.next = 18;
-              return _this.reply(chatId, TriggBot.LOCALE.triggers.add.done);
+              return _this.reply(chatId, TriggBot.LOCALE.bot.tagsNotAllowed);
 
             case 18:
-              _context8.next = 22;
-              break;
+              return _context8.abrupt('break', 68);
 
-            case 20:
-              _context8.next = 22;
-              return _this.reply(chatId, TriggBot.LOCALE.triggers.add.help);
-
-            case 22:
-              return _context8.abrupt('break', 42);
-
-            case 23:
-              trigger = _this.triggers.getByTarget(chatId, match[2]);
-
-              if (!trigger) {
-                _context8.next = 31;
+            case 19:
+              if (!_this.triggers.parseAndAdd(chatId, match[2])) {
+                _context8.next = 24;
                 break;
               }
 
-              _context8.next = 27;
-              return _this.triggers.remove(chatId, trigger);
+              _context8.next = 22;
+              return _this.reply(chatId, TriggBot.LOCALE.triggers.add.done);
 
-            case 27:
-              _context8.next = 29;
-              return _this.reply(chatId, TriggBot.LOCALE.triggers.del.done);
-
-            case 29:
-              _context8.next = 33;
+            case 22:
+              _context8.next = 26;
               break;
 
-            case 31:
+            case 24:
+              _context8.next = 26;
+              return _this.reply(chatId, TriggBot.LOCALE.triggers.add.help);
+
+            case 26:
+              return _context8.abrupt('break', 68);
+
+            case 27:
+              // SMELL CODE
+              rawJson = message.text.replace('/addj', '');
+              _context8.prev = 28;
+              jsonData = JSON.parse(rawJson);
+
+              if (!(!jsonData.target || !jsonData.message)) {
+                _context8.next = 34;
+                break;
+              }
+
               _context8.next = 33;
-              return _this.reply(chatId, TriggBot.LOCALE.triggers.del.help);
+              return _this.reply(chatId, TriggBot.LOCALE.bot.invalidArgs);
 
             case 33:
-              return _context8.abrupt('break', 42);
+              return _context8.abrupt('break', 68);
 
             case 34:
+              if (!_this.triggers.add(chatId, jsonData)) {
+                _context8.next = 39;
+                break;
+              }
+
+              _context8.next = 37;
+              return _this.reply(chatId, TriggBot.LOCALE.triggers.add.done);
+
+            case 37:
+              _context8.next = 41;
+              break;
+
+            case 39:
+              _context8.next = 41;
+              return _this.reply(chatId, TriggBot.LOCALE.triggers.add.help);
+
+            case 41:
+              _context8.next = 48;
+              break;
+
+            case 43:
+              _context8.prev = 43;
+              _context8.t2 = _context8['catch'](28);
+              _context8.next = 47;
+              return _this.reply(chatId, TriggBot.LOCALE.bot.invalidJson);
+
+            case 47:
+              return _context8.abrupt('break', 68);
+
+            case 48:
+              return _context8.abrupt('break', 68);
+
+            case 49:
+              trigger = _this.triggers.getByTarget(chatId, match[2]);
+
+              if (!trigger) {
+                _context8.next = 57;
+                break;
+              }
+
+              _context8.next = 53;
+              return _this.triggers.remove(chatId, trigger);
+
+            case 53:
+              _context8.next = 55;
+              return _this.reply(chatId, TriggBot.LOCALE.triggers.del.done);
+
+            case 55:
+              _context8.next = 59;
+              break;
+
+            case 57:
+              _context8.next = 59;
+              return _this.reply(chatId, TriggBot.LOCALE.triggers.del.help);
+
+            case 59:
+              return _context8.abrupt('break', 68);
+
+            case 60:
               chatTriggers = _this.triggers.getByChatID(chatId);
 
               if (!(!chatTriggers || chatTriggers.length === 0)) {
-                _context8.next = 37;
+                _context8.next = 63;
                 break;
               }
 
               return _context8.abrupt('return', _this.reply(chatId, TriggBot.LOCALE.triggers.all.empty));
 
-            case 37:
+            case 63:
               triggersListMessage = chatTriggers.map(function (trigger) {
                 return trigger.target + ' - ' + trigger.message;
               });
-              _context8.next = 40;
+              _context8.next = 66;
               return _this.reply(chatId, triggersListMessage.join('\n'));
 
-            case 40:
-              return _context8.abrupt('break', 42);
+            case 66:
+              return _context8.abrupt('break', 68);
 
-            case 41:
+            case 67:
               return _context8.abrupt('return', null);
 
-            case 42:
+            case 68:
               return _context8.abrupt('return', null);
 
-            case 43:
+            case 69:
             case 'end':
               return _context8.stop();
           }
         }
-      }, _callee8, _this);
+      }, _callee8, _this, [[28, 43]]);
     }));
 
     return function (_x11, _x12, _x13) {
@@ -397,7 +459,8 @@ var TriggBot = function TriggBot() {
                         case 0:
                           _context9.next = 2;
                           return _this.reply(chatId, trigger.message, {
-                            reply_to_message_id: message.message_id
+                            reply_to_message_id: message.message_id,
+                            parse_mode: 'html'
                           });
 
                         case 2:
@@ -430,10 +493,13 @@ var TriggBot = function TriggBot() {
 TriggBot.FILES = {
   config: '../config.json',
   triggers: '../triggers.json' };
-TriggBot.COMMANDS = [{ name: 'add', parseArguments: true, onlyAdmin: true }, { name: 'del', parseArguments: true, onlyAdmin: true }, { name: 'all', parseArguments: false, onlyAdmin: false }];
+TriggBot.COMMANDS = [{ name: 'add', parseArguments: true, onlyAdmin: true }, { name: 'addj', parseArguments: true, onlyAdmin: true }, { name: 'del', parseArguments: true, onlyAdmin: true }, { name: 'all', parseArguments: false, onlyAdmin: false }];
 TriggBot.LOCALE = {
   bot: {
-    notAdmin: 'У вас нет на это прав.'
+    notAdmin: 'У вас нет на это прав.',
+    tagsNotAllowed: 'Теги через /add запрещены. Используй /addj.',
+    invalidJson: 'Invalid json.',
+    invalidArgs: 'Use: /addj { "target": "foo", "message": "bar" }'
   },
   triggers: {
     add: {
@@ -508,7 +574,7 @@ var Triggers = function Triggers(file) {
     return _this2.triggers[chatId];
   };
 
-  this.add = function () {
+  this.parseAndAdd = function () {
     var _ref13 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee13(chatId, text) {
       var reqRegex, data, trigger;
       return _regenerator2.default.wrap(function _callee13$(_context13) {
@@ -533,14 +599,13 @@ var Triggers = function Triggers(file) {
                 _this2.triggers[chatId] = [];
               }
 
-              _this2.triggers[chatId].push(trigger);
-              _context13.next = 9;
-              return _this2.save();
+              _context13.next = 8;
+              return _this2.add(chatId, trigger);
 
-            case 9:
+            case 8:
               return _context13.abrupt('return', trigger);
 
-            case 10:
+            case 9:
             case 'end':
               return _context13.stop();
           }
@@ -553,17 +618,20 @@ var Triggers = function Triggers(file) {
     };
   }();
 
-  this.remove = function () {
+  this.add = function () {
     var _ref14 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee14(chatId, trigger) {
       return _regenerator2.default.wrap(function _callee14$(_context14) {
         while (1) {
           switch (_context14.prev = _context14.next) {
             case 0:
-              _this2.triggers[chatId].splice(_this2.triggers[chatId].indexOf(trigger), 1); // smell?
+              _this2.triggers[chatId].push(trigger);
+              _context14.next = 3;
+              return _this2.save();
 
-              return _context14.abrupt('return', _this2.save());
+            case 3:
+              return _context14.abrupt('return', trigger);
 
-            case 2:
+            case 4:
             case 'end':
               return _context14.stop();
           }
@@ -573,6 +641,29 @@ var Triggers = function Triggers(file) {
 
     return function (_x18, _x19) {
       return _ref14.apply(this, arguments);
+    };
+  }();
+
+  this.remove = function () {
+    var _ref15 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee15(chatId, trigger) {
+      return _regenerator2.default.wrap(function _callee15$(_context15) {
+        while (1) {
+          switch (_context15.prev = _context15.next) {
+            case 0:
+              _this2.triggers[chatId].splice(_this2.triggers[chatId].indexOf(trigger), 1); // smell?
+
+              return _context15.abrupt('return', _this2.save());
+
+            case 2:
+            case 'end':
+              return _context15.stop();
+          }
+        }
+      }, _callee15, _this2);
+    }));
+
+    return function (_x20, _x21) {
+      return _ref15.apply(this, arguments);
     };
   }();
 

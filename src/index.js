@@ -27,12 +27,16 @@ class TriggBot {
 
   static COMMANDS = [
     { name: 'add', parseArguments: true, onlyAdmin: true },
+    { name: 'addj', parseArguments: true, onlyAdmin: true },
     { name: 'del', parseArguments: true, onlyAdmin: true },
     { name: 'all', parseArguments: false, onlyAdmin: false } ];
 
   static LOCALE = {
     bot: {
-      notAdmin: 'У вас нет на это прав.'
+      notAdmin: 'У вас нет на это прав.',
+      tagsNotAllowed: 'Теги через /add запрещены. Используй /addj.',
+      invalidJson: 'Invalid json.',
+      invalidArgs: 'Use: /addj { "target": "foo", "message": "bar" }'
     },
     triggers: {
       add: {
@@ -108,12 +112,43 @@ class TriggBot {
           break;
         }
 
-        if (this.triggers.add(chatId, match[2])) {
+        // tags only for /addj
+        // TODO better checking?
+        if (match[2].includes('<') && match[2].includes('</')) {
+          await this.reply(chatId, TriggBot.LOCALE.bot.tagsNotAllowed);
+          break;
+        }
+
+        if (this.triggers.parseAndAdd(chatId, match[2])) {
           await this.reply(chatId, TriggBot.LOCALE.triggers.add.done);
         } else {
           await this.reply(chatId, TriggBot.LOCALE.triggers.add.help);
         }
 
+        break;
+      }
+
+      case 'addj' : {
+        // SMELL CODE
+        const rawJson = message.text.replace('/addj', '');
+
+        try {
+          const jsonData = JSON.parse(rawJson);
+
+          if (!jsonData.target || !jsonData.message) {
+            await this.reply(chatId, TriggBot.LOCALE.bot.invalidArgs);
+            break;
+          }
+
+          if (this.triggers.add(chatId, jsonData)) {
+            await this.reply(chatId, TriggBot.LOCALE.triggers.add.done);
+          } else {
+            await this.reply(chatId, TriggBot.LOCALE.triggers.add.help);
+          }
+        } catch (ex) {
+          await this.reply(chatId, TriggBot.LOCALE.bot.invalidJson);
+          break;
+        }
         break;
       }
 
@@ -160,7 +195,8 @@ class TriggBot {
 
     triggers.forEach(async (trigger) => {
       await this.reply(chatId, trigger.message, {
-        reply_to_message_id: message.message_id
+        reply_to_message_id: message.message_id,
+        parse_mode: 'html'
       });
     });
   };
@@ -192,7 +228,7 @@ class Triggers {
 
   getByChatID = chatId => this.triggers[chatId];
 
-  add = async (chatId, text) => {
+  parseAndAdd = async (chatId, text) => {
     const reqRegex = new RegExp(/(.+)(\/)(.+)/g);
     const data = reqRegex.exec(text);
 
@@ -206,6 +242,12 @@ class Triggers {
       this.triggers[chatId] = [];
     }
 
+    await this.add(chatId, trigger);
+
+    return trigger;
+  };
+
+  add = async (chatId, trigger) => {
     this.triggers[chatId].push(trigger);
     await this.save();
 
